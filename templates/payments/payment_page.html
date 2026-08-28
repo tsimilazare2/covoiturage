@@ -1,0 +1,120 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Paiement — Maroua Covoit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50">
+    <header class="bg-white shadow-sm">
+      <div class="max-w-4xl mx-auto px-4 py-3">
+        <a href="/" class="text-green-700 hover:text-green-800 font-semibold">&larr; Retour</a>
+      </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto p-6">
+      <h1 class="text-3xl font-bold text-green-700 mb-6">Paiement</h1>
+
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for message in messages %}
+            {% if message.tags == 'success' %}
+              <div class="px-4 py-2 rounded bg-green-100 text-green-800">{{ message }}</div>
+            {% else %}
+              <div class="px-4 py-2 rounded bg-red-100 text-red-800">{{ message }}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Résumé de la réservation -->
+        <div class="md:col-span-1">
+          <div class="bg-white p-6 rounded shadow">
+            <h2 class="font-semibold mb-4">Résumé</h2>
+            <div class="space-y-2 text-sm border-b pb-4 mb-4">
+              <div class="flex justify-between">
+                <span>Trajet</span>
+                <span class="font-semibold">{{ booking.trip_offer.route.point_depart }} → {{ booking.trip_offer.route.destination }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Places</span>
+                <span class="font-semibold">{{ booking.nombre_places }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span>Prix/place</span>
+                <span class="font-semibold">{{ booking.prix_unitaire }} FCFA</span>
+              </div>
+            </div>
+            <div class="flex justify-between text-lg font-bold text-green-700">
+              <span>Total</span>
+              <span>{{ booking.montant_total }} FCFA</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Formulaire de paiement -->
+        <div class="md:col-span-2">
+          <div class="bg-white p-6 rounded shadow">
+            <h2 class="text-xl font-semibold mb-4">Choisir un mode de paiement</h2>
+            <form method="post" novalidate class="space-y-4">
+              {% csrf_token %}
+
+              {% for value, label in form.method.field.choices %}
+                <div class="border rounded p-4 cursor-pointer" onclick="document.getElementById('id_method_{{ forloop.counter }}').click()">
+                  <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="method" id="id_method_{{ forloop.counter }}" value="{{ value }}" 
+                      {% if value == 'CASH' %}checked{% endif %} class="mr-3">
+                    <span class="font-semibold">{{ label }}</span>
+                  </label>
+                  {% if value == 'CASH' %}
+                    <p class="text-sm text-gray-600 mt-2">Payez en espèces au chauffeur lors de la course.</p>
+                  {% elif value == 'MTN' %}
+                    <p class="text-sm text-gray-600 mt-2">Payez via MTN Mobile Money (frais éventuels).</p>
+                  {% elif value == 'ORANGE' %}
+                    <p class="text-sm text-gray-600 mt-2">Payez via Orange Money (frais éventuels).</p>
+                  {% endif %}
+                </div>
+              {% endfor %}
+
+              <!-- Champ de numéro téléphone (affiché si Mobile Money ou Orange Money) -->
+              <div id="phone-field" class="{% if form.method.value == 'CASH' %}hidden{% endif %}">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Numéro de téléphone</label>
+                {{ form.phone_number }}
+                {% if form.phone_number.errors %}
+                  <p class="text-red-600 text-sm">{{ form.phone_number.errors.0 }}</p>
+                {% endif %}
+              </div>
+
+              <button class="w-full bg-green-700 text-white px-6 py-3 rounded hover:bg-green-800 font-semibold" type="submit">
+                Payer {{ booking.montant_total }} FCFA
+              </button>
+            </form>
+
+            <script>
+              // Afficher/masquer le champ téléphone selon le mode de paiement
+              const methodRadios = document.querySelectorAll('input[name="method"]');
+              const phoneField = document.getElementById('phone-field');
+              
+              methodRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                  if (radio.value === 'CASH') {
+                    phoneField.classList.add('hidden');
+                  } else {
+                    phoneField.classList.remove('hidden');
+                  }
+                });
+              });
+            </script>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-6 text-sm text-gray-600">
+        <p><strong>Sécurité :</strong> Maroua Covoit ne stocke jamais vos données bancaires ou PIN Mobile Money. Seul le numéro de téléphone est utilisé pour initier le paiement.</p>
+      </div>
+    </main>
+  </body>
+</html>

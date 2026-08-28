@@ -1,0 +1,1637 @@
+PROMPT MAÎTRE — APPLICATION DE COVOITURAGE SÉCURISÉE POUR MAROUA
+
+Tu es un développeur logiciel senior spécialisé en Django, Python, SQLite, sécurité web, UX/UI et architecture logicielle.
+
+Ta mission est de concevoir et développer une application web moderne, professionnelle, sécurisée et responsive de covoiturage destinée principalement à la ville de Maroua, Cameroun.
+
+L'application doit être réellement fonctionnelle et non une simple maquette.
+
+==================================================
+1. OBJECTIF DU PROJET
+==================================================
+
+Créer une plateforme de covoiturage permettant aux habitants de Maroua de rechercher, réserver et proposer des trajets.
+
+La priorité absolue est la SÉCURITÉ et la FIABILITÉ des utilisateurs.
+
+Un chauffeur ne peut proposer un trajet que si son identité, son permis de conduire, son véhicule et les documents nécessaires ont été vérifiés et validés par un administrateur.
+
+Un client/passager doit également être vérifié. IMPORTANT : le client ne doit PAS fournir sa CNI et ses informations sensibles à chaque réservation. Il les soumet UNE SEULE FOIS lors de la vérification de son profil. L'administrateur examine et valide son profil. Lors d'une réservation, le système vérifie uniquement que le compte du client est toujours valide et autorisé à réserver.
+
+Les administrateurs contrôlent les itinéraires et les prix.
+
+Le chauffeur ne fixe PAS librement le prix.
+
+Lorsqu'un chauffeur sélectionne un itinéraire, le prix défini par l'administrateur lui est automatiquement proposé.
+
+==================================================
+2. STACK TECHNIQUE
+==================================================
+
+Utiliser :
+
+- Python 3
+- Django
+- SQLite pour le développement
+- HTML5
+- CSS3
+- JavaScript
+- Tailwind CSS
+- Bootstrap 5
+- Bootstrap Icons ou Font Awesome
+- Django Templates
+- Django Forms
+- Django ORM
+- Django Authentication
+- Pillow pour les images
+- éventuellement django-widget-tweaks si réellement utile
+
+Ne pas utiliser React, Vue, Angular ou Node.js pour le frontend.
+
+Le projet doit rester principalement basé sur Django Templates + Tailwind CSS + Bootstrap.
+
+Tailwind et Bootstrap doivent être utilisés de manière cohérente :
+- Tailwind pour les layouts, espacements, responsive design et personnalisation visuelle.
+- Bootstrap pour les composants/utilitaires lorsqu'il apporte une vraie valeur.
+Éviter de mélanger inutilement les deux systèmes pour le même composant.
+
+==================================================
+3. DESIGN / IDENTITÉ VISUELLE
+==================================================
+
+Le design doit être MODERNE, PREMIUM, MAGNIFIQUE, PROFESSIONNEL et RESPONSIVE.
+
+L'application doit donner l'impression d'une vraie startup technologique africaine spécialisée dans la mobilité.
+
+Nom provisoire : "Maroua Covoit"
+
+Palette recommandée :
+
+- Vert principal : #16A34A
+- Rouge accent : #DC2626
+- Jaune accent : #FACC15
+- Noir profond : #111827
+- Blanc : #FFFFFF
+- Gris clair : #F3F4F6
+
+Utiliser principalement le vert comme couleur principale.
+Les couleurs rouge et jaune doivent rester des accents subtils.
+
+Créer :
+- Navbar moderne
+- Hero section élégante
+- cartes de trajets
+- badges de vérification
+- boutons avec effets hover
+- formulaires modernes
+- tableaux administrateur professionnels
+- dashboards avec statistiques
+- modales de confirmation
+- notifications/toasts
+- états loading
+- empty states
+- error states
+- pages 404 et 500 personnalisées
+- footer professionnel
+
+Ajouter des micro-interactions et animations CSS légères.
+Ne pas surcharger l'interface avec des animations inutiles.
+
+L'interface doit être excellente sur :
+- ordinateur
+- tablette
+- smartphone
+
+==================================================
+4. ACTEURS DU SYSTÈME
+==================================================
+
+Trois rôles :
+
+1. ADMINISTRATEUR
+2. CHAUFFEUR
+3. CLIENT / PASSAGER
+
+L'administrateur n'est jamais sélectionnable dans l'inscription publique.
+
+Utiliser un Custom User Model Django dès le début.
+
+Champs minimum :
+
+User
+- id
+- username
+- first_name
+- last_name
+- email
+- phone
+- password
+- role
+- profile_photo
+- is_verified
+- is_active
+- date_joined
+- updated_at
+
+Roles :
+ADMIN
+DRIVER
+PASSENGER
+
+Utiliser les permissions Django lorsque pertinent.
+
+==================================================
+5. INSCRIPTION
+==================================================
+
+Lorsqu'un utilisateur s'inscrit, il choisit :
+
+- Client
+- Chauffeur
+
+Formulaire :
+- prénom
+- nom
+- téléphone
+- email
+- mot de passe
+- confirmation du mot de passe
+- photo de profil facultative
+- acceptation des conditions d'utilisation
+- acceptation de la politique de confidentialité
+
+Valider les données côté serveur.
+
+Les mots de passe doivent utiliser le système de hashage sécurisé de Django.
+
+==================================================
+6. VÉRIFICATION DU CLIENT — UNE SEULE FOIS
+==================================================
+
+RÈGLE MÉTIER CRITIQUE :
+
+Le client ne doit PAS fournir sa CNI, ses documents d'identité ou d'autres informations sensibles à chaque réservation.
+
+Le client soumet ses informations sensibles UNE SEULE FOIS dans son espace "Vérification du profil".
+
+Créer un processus de vérification indépendant de la réservation.
+
+Informations/documents possibles :
+- CNI
+- numéro de document
+- date d'expiration
+- image recto
+- image verso
+
+Le statut du profil/document doit pouvoir être :
+
+- NON_SOUMIS
+- EN_ATTENTE
+- VALIDE
+- REFUSE
+- EXPIRE
+
+Workflow :
+
+Inscription client
+    ↓
+Profil créé
+    ↓
+Soumission des informations/documents de vérification
+    ↓
+EN_ATTENTE
+    ↓
+Administrateur examine
+    ↓
+VALIDE ou REFUSE
+    ↓
+Le client peut réserver uniquement si son statut est toujours valide.
+
+Une fois validées, les informations sensibles restent associées au profil sécurisé du client et ne sont PAS redemandées lors d'une réservation.
+
+Lors d'une réservation, Django doit simplement vérifier côté serveur :
+
+- compte actif
+- profil vérifié
+- documents toujours valides
+- absence de suspension
+- droit de réservation
+
+Exemple conceptuel :
+
+client.can_make_booking()
+
+Cette méthode doit effectuer les vérifications nécessaires.
+
+Si le client n'est pas vérifié, afficher :
+
+"Votre profil doit être vérifié avant de pouvoir réserver un trajet."
+
+Si un document est expiré :
+
+"Votre vérification a expiré. Veuillez mettre à jour vos documents."
+
+==================================================
+7. VÉRIFICATION DU CHAUFFEUR
+==================================================
+
+Le chauffeur doit fournir obligatoirement :
+
+IDENTITÉ :
+- prénom
+- nom
+- téléphone
+- CNI recto
+- CNI verso
+- date d'expiration CNI
+
+PERMIS :
+- numéro du permis
+- catégorie
+- date d'expiration
+- image du permis
+
+VÉHICULE :
+- marque
+- modèle
+- couleur
+- année
+- numéro d'immatriculation
+- nombre de places
+- photo du véhicule
+
+DOCUMENTS DU VÉHICULE :
+- type de document
+- numéro
+- date d'expiration
+- fichier/photo
+
+Créer une relation claire entre :
+
+User
+→ DriverProfile
+→ Vehicle
+→ Documents
+
+==================================================
+8. VALIDATION ADMINISTRATEUR
+==================================================
+
+Un chauffeur ne peut publier une offre que si :
+
+- compte actif
+- identité validée
+- CNI valide
+- permis valide
+- véhicule validé
+- documents du véhicule valides
+
+Un client ne peut réserver que si :
+
+- compte actif
+- profil vérifié
+- documents de vérification toujours valides
+- compte non suspendu
+
+Créer des méthodes/services centraux :
+
+can_publish_trip(driver)
+can_make_booking(client)
+
+Ces vérifications doivent être exécutées côté serveur.
+
+Ne jamais se contenter d'une vérification frontend.
+
+==================================================
+9. CONFIDENTIALITÉ DES DOCUMENTS
+==================================================
+
+Les documents sensibles comme les CNI, permis et documents du véhicule ne doivent JAMAIS être publiquement accessibles.
+
+Ils sont visibles uniquement par :
+- le propriétaire concerné
+- les administrateurs autorisés
+
+Ne jamais afficher sur un profil public :
+- numéro complet de CNI
+- numéro complet de permis
+- images de documents
+- autres données administratives sensibles
+
+Le public doit uniquement voir des informations non sensibles comme :
+
+✓ Profil vérifié
+✓ Chauffeur vérifié
+✓ Permis vérifié
+✓ Véhicule vérifié
+
+Pour les documents clients, aucune donnée sensible ne doit être visible par les chauffeurs ou les autres clients.
+
+==================================================
+10. ITINÉRAIRES
+==================================================
+
+Les itinéraires sont gérés par les administrateurs.
+
+Créer un modèle Route/Itinerary.
+
+Champs :
+- id
+- nom
+- point_depart
+- destination
+- description
+- distance_km
+- duree_estimee
+- prix
+- active
+- created_at
+- updated_at
+
+Prévoir des itinéraires de démonstration pour Maroua.
+
+Les administrateurs peuvent :
+- créer
+- modifier
+- désactiver
+- réactiver
+- consulter
+
+==================================================
+11. TARIFICATION
+==================================================
+
+RÈGLE MÉTIER CRITIQUE :
+
+Le prix est défini uniquement par l'administrateur.
+
+Le chauffeur ne peut PAS modifier le prix.
+
+Exemple :
+
+Route :
+Maroua → Domayo
+Prix : 500 FCFA
+
+Lorsqu'un chauffeur sélectionne cette route, le système affiche automatiquement :
+
+"Prix du trajet : 500 FCFA"
+
+Le champ prix ne doit pas être modifiable côté frontend.
+
+Mais surtout :
+NE JAMAIS faire confiance au frontend.
+
+Lors de la création de l'offre, Django doit récupérer le prix directement depuis la Route en base de données.
+
+Ne jamais accepter un prix envoyé par le navigateur.
+
+==================================================
+12. OFFRE DE TRAJET
+==================================================
+
+Créer un modèle TripOffer.
+
+Champs :
+- chauffeur
+- itinéraire
+- véhicule
+- date_depart
+- heure_depart
+- places_totales
+- places_disponibles
+- prix_unitaire
+- statut
+- created_at
+- updated_at
+
+Statuts :
+DRAFT
+PUBLISHED
+FULL
+CANCELLED
+COMPLETED
+
+Le prix doit être copié depuis la route au moment de la création de l'offre.
+
+==================================================
+13. PUBLICATION PAR LE CHAUFFEUR
+==================================================
+
+Workflow :
+
+Chauffeur connecté
+↓
+Dashboard
+↓
+Publier un trajet
+↓
+Choisir un itinéraire
+↓
+Django récupère automatiquement le tarif
+↓
+Choisir véhicule
+↓
+Choisir date
+↓
+Choisir heure
+↓
+Nombre de places
+↓
+Résumé
+↓
+Publication
+
+Si le chauffeur n'est pas validé, bloquer la publication et expliquer la raison.
+
+==================================================
+14. RECHERCHE CLIENT
+==================================================
+
+Créer une page de recherche très moderne.
+
+Filtres :
+- départ
+- destination
+- date
+- heure
+- prix
+- nombre de places
+- chauffeur vérifié
+- note du chauffeur
+
+Exemple :
+
+Départ :
+[ Maroua ]
+
+Destination :
+[ Domayo ]
+
+Date :
+[ date ]
+
+[ RECHERCHER ]
+
+Afficher les résultats sous forme de cartes modernes.
+
+Chaque carte doit afficher :
+- photo chauffeur
+- nom
+- badge "Vérifié"
+- note
+- itinéraire
+- date
+- heure
+- véhicule
+- places disponibles
+- prix
+
+Bouton :
+"Voir le trajet"
+
+==================================================
+15. ITINÉRAIRE PERSONNALISÉ
+==================================================
+
+Le client peut également rechercher selon un itinéraire personnalisé.
+
+Exemple :
+
+Départ :
+Marché Central
+
+Destination :
+Université de Maroua
+
+Le système doit rechercher les offres compatibles.
+
+Pour la première version, utiliser des points de départ et destinations enregistrés/validés par l'administration.
+
+Prévoir un modèle Location/Point d'intérêt si nécessaire.
+
+==================================================
+16. RÉSERVATION
+==================================================
+
+Créer un modèle Booking.
+
+Champs :
+- client
+- offre
+- nombre_places
+- prix_unitaire
+- montant_total
+- statut
+- payment_method
+- payment_status
+- transaction_reference
+- created_at
+- updated_at
+
+Statuts :
+PENDING
+CONFIRMED
+CANCELLED
+REJECTED
+COMPLETED
+
+IMPORTANT :
+
+Lors d'une réservation, NE PAS demander à nouveau :
+- CNI
+- numéro de CNI
+- photo de CNI
+- documents d'identité
+- autres informations sensibles déjà validées.
+
+La réservation doit seulement vérifier le statut du profil du client.
+
+Le système doit empêcher :
+- réservation si offre complète
+- réservation d'un trajet passé
+- réservation par un client non vérifié
+- réservation par un client suspendu
+- réservation dépassant les places disponibles
+- double réservation incohérente
+
+Utiliser des transactions Django lorsque nécessaire pour éviter les problèmes de concurrence.
+
+==================================================
+17. PRIX UNITAIRE ET MONTANT TOTAL
+==================================================
+
+Conserver séparément :
+
+prix_unitaire
+nombre_places
+montant_total
+
+Exemple :
+
+Prix : 500 FCFA/place
+Nombre de places : 2
+Total : 1 000 FCFA
+
+Le montant total doit toujours être calculé côté serveur :
+
+montant_total = prix_unitaire × nombre_places
+
+Ne jamais faire confiance au montant total envoyé par le navigateur.
+
+==================================================
+18. PAIEMENT
+==================================================
+
+Le client doit pouvoir choisir :
+
+1. CASH
+2. MTN MOBILE MONEY
+3. ORANGE MONEY
+
+Interface :
+
+Mode de paiement
+
+○ Espèces
+○ MTN Mobile Money
+○ Orange Money
+
+Si CASH :
+"Paiement en espèces au chauffeur selon les conditions du trajet."
+
+Si Mobile Money :
+demander le numéro de téléphone de paiement.
+
+Si Orange Money :
+demander le numéro de téléphone de paiement.
+
+IMPORTANT :
+
+Ne pas inventer une API de paiement réelle.
+
+Créer une architecture PaymentService extensible :
+
+PaymentService
+├── CashPaymentService
+├── MobileMoneyPaymentService
+└── OrangeMoneyPaymentService
+
+Pour le MVP, Mobile Money et Orange Money peuvent être simulés avec un statut PENDING et une référence de test.
+
+Préparer clairement l'architecture pour brancher une vraie API ultérieurement.
+
+NE JAMAIS :
+- demander ou stocker un PIN Mobile Money
+- stocker des données bancaires sensibles
+- prétendre qu'une transaction réelle a été effectuée si aucune API réelle n'est connectée.
+
+==================================================
+19. FLUX DE PAIEMENT
+==================================================
+
+Exemple :
+
+Client vérifié
+↓
+Choisit un trajet
+↓
+Clique "Réserver"
+↓
+Choisit Orange Money
+↓
+Saisit son numéro
+↓
+Création de la réservation
+↓
+Création du paiement
+↓
+Payment.status = PENDING
+↓
+Simulation ou future API
+↓
+SUCCESS ou FAILED
+↓
+Confirmation finale de la réservation selon les règles métier.
+
+Pour CASH :
+le paiement peut avoir un statut adapté comme CASH_PENDING ou PENDING.
+
+==================================================
+20. HISTORIQUE
+==================================================
+
+CLIENT :
+
+- réservations passées
+- réservations futures
+- paiements
+- trajets terminés
+- annulations
+
+CHAUFFEUR :
+
+- trajets publiés
+- trajets terminés
+- réservations reçues
+- revenus estimés
+- historique
+
+==================================================
+21. ÉVALUATIONS
+==================================================
+
+Après un trajet terminé, permettre au client d'évaluer le chauffeur.
+
+Note :
+1 à 5 étoiles.
+
+Commentaire facultatif.
+
+Créer :
+
+Rating
+- client
+- chauffeur
+- booking/trip
+- score
+- commentaire
+- created_at
+
+Un client ne peut évaluer que :
+- un trajet qu'il a réellement réservé
+- un trajet terminé
+- une seule fois par réservation
+
+Afficher la note moyenne du chauffeur.
+
+==================================================
+22. SIGNALLEMENT
+==================================================
+
+Créer un système de signalement.
+
+Client ou chauffeur peut signaler :
+- comportement inapproprié
+- problème de sécurité
+- utilisateur différent
+- véhicule différent
+- trajet non effectué
+- problème de paiement
+- autre
+
+Créer :
+
+Report
+- reporter
+- reported_user
+- booking
+- category
+- description
+- status
+- admin_note
+- created_at
+- resolved_at
+
+Statuts :
+OPEN
+IN_REVIEW
+RESOLVED
+REJECTED
+
+==================================================
+23. SUSPENSION
+==================================================
+
+L'administrateur peut :
+- suspendre un utilisateur
+- réactiver un utilisateur
+- désactiver un chauffeur
+- désactiver un véhicule
+- désactiver une offre
+
+Un utilisateur suspendu ne peut plus effectuer les actions protégées.
+
+==================================================
+24. EXPIRATION DES DOCUMENTS
+==================================================
+
+Gérer automatiquement les dates d'expiration.
+
+Exemple :
+CNI expire le 10/09/2026.
+
+Lorsque la date est dépassée :
+Document = EXPIRED
+
+Pour un chauffeur :
+il ne peut plus publier.
+
+Pour un client :
+il ne peut plus réserver tant que son profil n'est pas régularisé.
+
+Afficher clairement les alertes :
+
+"⚠ Votre document arrive bientôt à expiration."
+
+ou
+
+"⚠ Votre vérification a expiré. Veuillez mettre à jour vos documents."
+
+Prévoir des alertes avant expiration.
+
+==================================================
+25. NOTIFICATIONS
+==================================================
+
+Créer un système de notifications internes.
+
+Exemples :
+
+"Votre compte a été validé."
+
+"Votre réservation a été confirmée."
+
+"Votre trajet commence bientôt."
+
+"Votre document arrive bientôt à expiration."
+
+"Votre réservation a été annulée."
+
+Créer :
+
+Notification
+- recipient
+- title
+- message
+- type
+- is_read
+- created_at
+
+Afficher un compteur de notifications non lues.
+
+==================================================
+26. DASHBOARD CLIENT
+==================================================
+
+Créer un dashboard premium.
+
+Afficher :
+
+Bonjour, [Prénom]
+
+Statistiques :
+- réservations
+- trajets à venir
+- trajets terminés
+- dépenses
+
+Sections :
+- Rechercher un trajet
+- Mes réservations
+- Mes paiements
+- Mes notifications
+- Mon profil
+- Vérification
+- Paramètres
+- Aide
+
+Le dashboard doit afficher clairement le statut de vérification :
+
+✓ Profil vérifié
+ou
+⏳ Vérification en attente
+ou
+⚠ Vérification expirée
+ou
+✕ Vérification refusée
+
+==================================================
+27. DASHBOARD CHAUFFEUR
+==================================================
+
+Afficher :
+
+Bonjour, [Prénom]
+
+Statistiques :
+- trajets publiés
+- trajets terminés
+- réservations
+- places vendues
+- revenus estimés
+- note moyenne
+
+Actions :
+"Publier un trajet"
+"Mes trajets"
+"Mes réservations"
+"Mon véhicule"
+"Mes documents"
+"Mon profil"
+
+==================================================
+28. DASHBOARD ADMINISTRATEUR
+==================================================
+
+Créer un dashboard professionnel.
+
+Afficher :
+- nombre total d'utilisateurs
+- clients
+- chauffeurs
+- chauffeurs vérifiés
+- vérifications en attente
+- trajets actifs
+- réservations
+- paiements
+- revenus
+- signalements
+
+Créer des graphiques simples et modernes si pertinent.
+
+Menu :
+Dashboard
+Utilisateurs
+Chauffeurs
+Clients
+Vérifications
+Véhicules
+Documents
+Itinéraires
+Tarifs
+Offres
+Réservations
+Paiements
+Évaluations
+Signalements
+Notifications
+Paramètres
+
+==================================================
+29. ADMIN DJANGO
+==================================================
+
+Configurer Django Admin proprement.
+
+Créer :
+- list_display
+- list_filter
+- search_fields
+- ordering
+- readonly_fields
+- fieldsets
+
+pour les modèles importants.
+
+Créer également un dashboard frontend personnalisé pour les administrateurs.
+
+==================================================
+30. SÉCURITÉ DJANGO
+==================================================
+
+Respecter les bonnes pratiques Django :
+
+- CSRF
+- protection XSS
+- authentification Django
+- permissions
+- login_required
+- vérifications côté serveur
+- validation des formulaires
+- protection des fichiers uploadés
+- limite de taille des fichiers
+- contrôle des extensions
+- contrôle d'accès aux documents
+- messages d'erreur non sensibles
+
+Ne jamais faire confiance aux données du navigateur.
+
+Ne jamais exposer les documents privés.
+
+Ne jamais exposer les mots de passe.
+
+Ne jamais stocker de PIN Mobile Money.
+
+Les actions sensibles doivent être protégées par permissions et vérifications serveur.
+
+==================================================
+31. STRUCTURE DU PROJET
+==================================================
+
+Organiser le projet avec des applications Django cohérentes.
+
+Proposition :
+
+maroua_covoit/
+│
+├── config/
+├── accounts/
+├── verification/
+├── vehicles/
+├── routes/
+├── trips/
+├── bookings/
+├── payments/
+├── ratings/
+├── reports/
+├── notifications/
+├── core/
+├── templates/
+├── static/
+├── media/
+├── manage.py
+└── db.sqlite3
+
+Ne pas créer inutilement trop d'applications.
+
+==================================================
+32. MODÈLES
+==================================================
+
+Créer des modèles Django propres avec :
+- ForeignKey
+- OneToOneField
+- ManyToManyField lorsque nécessaire
+- related_name explicites
+- contraintes
+- indexes
+- choices
+- timestamps
+
+Ajouter :
+- verbose_name
+- verbose_name_plural
+- ordering
+
+Créer des méthodes utiles :
+
+driver.is_fully_verified()
+client.is_fully_verified()
+client.can_make_booking()
+trip.has_available_seats()
+trip.can_be_booked()
+document.is_valid()
+
+==================================================
+33. LOGIQUE MÉTIER
+==================================================
+
+Éviter de mettre toute la logique dans les views.
+
+Créer des services lorsque nécessaire :
+
+services/
+    verification_service.py
+    booking_service.py
+    payment_service.py
+    notification_service.py
+
+La logique critique doit être testable indépendamment des views.
+
+==================================================
+34. PAIEMENTS — MODÈLE
+==================================================
+
+Créer un modèle Payment :
+
+- booking
+- amount
+- method
+- status
+- phone_number
+- transaction_reference
+- paid_at
+- created_at
+- updated_at
+
+Methods :
+CASH
+MTN_MOBILE_MONEY
+ORANGE_MONEY
+
+Statuses :
+PENDING
+SUCCESS
+FAILED
+CANCELLED
+
+Le montant doit toujours être calculé côté serveur.
+
+==================================================
+35. TARIFICATION ET HISTORIQUE
+==================================================
+
+Lorsque l'offre est créée :
+
+route.price → trip_offer.price
+
+Ensuite, si l'administrateur modifie le prix de la route, l'ancien trajet ne doit PAS changer de prix.
+
+Exemple :
+
+Aujourd'hui :
+Maroua → Domayo = 500 FCFA
+
+Trip A = 500 FCFA
+
+Demain :
+Maroua → Domayo = 600 FCFA
+
+Trip A doit rester à 500 FCFA.
+
+Trip B créé demain = 600 FCFA.
+
+==================================================
+36. INTERFACE DE RECHERCHE
+==================================================
+
+Créer une expérience de recherche moderne.
+
+Hero :
+
+"Déplacez-vous simplement dans Maroua"
+
+Sous-titre :
+
+"Voyagez avec des chauffeurs vérifiés."
+
+Formulaire de recherche sous forme de carte flottante.
+
+Résultats avec :
+- photo
+- chauffeur vérifié
+- note
+- itinéraire
+- heure
+- prix
+- places
+- véhicule
+
+Ajouter des filtres sans rechargement inutile lorsque possible.
+
+==================================================
+37. PAGE DÉTAIL DU TRAJET
+==================================================
+
+Afficher :
+
+Chauffeur
+Photo
+Nom
+Badge vérifié
+Note
+
+Itinéraire
+Départ
+Destination
+
+Date
+Heure
+
+Véhicule
+Marque
+Modèle
+Couleur
+Immatriculation partiellement masquée si nécessaire
+
+Prix
+Places restantes
+
+Bouton :
+"Réserver maintenant"
+
+Si le client n'est pas vérifié, le bouton doit être désactivé ou rediriger vers la page de vérification avec un message clair.
+
+==================================================
+38. BADGES
+==================================================
+
+Créer des badges élégants :
+
+✓ Vérifié
+✓ Permis vérifié
+✓ Véhicule vérifié
+
+Pour les clients, afficher seulement le statut nécessaire, sans exposer leurs données sensibles.
+
+==================================================
+39. RESPONSIVE
+==================================================
+
+Mobile first.
+
+Sur mobile :
+- navbar hamburger
+- cartes en une colonne
+- boutons accessibles
+- formulaires adaptés
+- dashboard simplifié
+- navigation mobile claire
+
+==================================================
+40. ACCESSIBILITÉ
+==================================================
+
+Respecter autant que possible :
+- labels des formulaires
+- contrastes
+- navigation clavier
+- aria-labels lorsque nécessaire
+- textes alternatifs pour les images
+- boutons clairement identifiables
+
+==================================================
+41. TESTS
+==================================================
+
+Créer des tests Django.
+
+AUTHENTIFICATION :
+- inscription
+- connexion
+- permissions
+
+VÉRIFICATION CLIENT :
+- client peut soumettre ses documents
+- client vérifié peut accéder aux réservations
+- client non vérifié ne peut pas réserver
+- client ne doit pas être obligé de resoumettre sa CNI à chaque réservation
+- document expiré bloque la réservation
+- client suspendu ne peut pas réserver
+
+VÉRIFICATION CHAUFFEUR :
+- chauffeur non vérifié ne peut pas publier
+- chauffeur vérifié peut publier
+- document expiré bloque la publication
+
+ITINÉRAIRES :
+- itinéraire actif
+- itinéraire désactivé
+
+TARIFICATION :
+- prix récupéré depuis la route
+- chauffeur ne peut pas modifier le prix
+- modification future du tarif ne modifie pas les anciennes offres
+
+RÉSERVATION :
+- réservation normale
+- nombre de places
+- offre complète
+- trajet passé
+- client non vérifié
+- double réservation incohérente
+- calcul correct du montant total
+
+PAIEMENT :
+- cash
+- Mobile Money
+- Orange Money
+- paiement échoué
+- paiement réussi
+
+ÉVALUATION :
+- seulement après trajet terminé
+- une seule évaluation par réservation
+
+SÉCURITÉ :
+- utilisateur non autorisé ne peut pas voir les documents
+- client ne peut pas accéder aux fonctions chauffeur
+- chauffeur ne peut pas accéder au dashboard admin
+- client ne peut pas modifier son propre statut de vérification
+- client ne peut pas modifier un document validé sans repasser par le processus de vérification
+
+==================================================
+42. DONNÉES DE DÉMONSTRATION
+==================================================
+
+Créer une commande Django :
+
+python manage.py seed_data
+
+Créer des données fictives réalistes :
+- administrateur
+- chauffeurs
+- clients
+- itinéraires
+- véhicules
+- offres
+- réservations
+- évaluations
+
+Créer plusieurs itinéraires de démonstration pour Maroua.
+
+Ne jamais utiliser de vraies données personnelles.
+
+==================================================
+43. ENVIRONNEMENT
+==================================================
+
+Créer :
+
+.env.example
+
+avec :
+
+SECRET_KEY=
+DEBUG=True
+ALLOWED_HOSTS=127.0.0.1,localhost
+
+Ne jamais mettre de secrets directement dans Git.
+
+Créer un .gitignore adapté à Django.
+
+Ignorer :
+.env
+db.sqlite3
+/media/
+/staticfiles/
+__pycache__/
+*.pyc
+
+==================================================
+44. DOCUMENTATION
+==================================================
+
+Créer un README.md professionnel contenant :
+- présentation
+- fonctionnalités
+- technologies
+- architecture
+- installation
+- configuration
+- migrations
+- création superuser
+- seed data
+- lancement
+- tests
+- structure du projet
+
+Commandes :
+
+python -m venv venv
+
+Windows :
+venv\Scripts\activate
+
+pip install -r requirements.txt
+
+python manage.py makemigrations
+python manage.py migrate
+python manage.py createsuperuser
+python manage.py seed_data
+python manage.py runserver
+
+==================================================
+45. RÈGLE DE DÉVELOPPEMENT
+==================================================
+
+NE PAS générer tout le projet dans un seul énorme fichier.
+
+Développer proprement étape par étape.
+
+Étape 1 :
+Créer le projet Django et les applications.
+
+Étape 2 :
+Configurer settings, SQLite, static, media, templates.
+
+Étape 3 :
+Créer Custom User et authentification.
+
+Étape 4 :
+Créer profils chauffeur/client.
+
+Étape 5 :
+Créer système de vérification des profils.
+
+Étape 6 :
+Créer véhicules et documents.
+
+Étape 7 :
+Créer itinéraires et tarification.
+
+Étape 8 :
+Créer offres de trajets.
+
+Étape 9 :
+Créer recherche.
+
+Étape 10 :
+Créer réservation.
+
+Étape 11 :
+Créer paiement Cash / MTN Mobile Money / Orange Money avec architecture extensible.
+
+Étape 12 :
+Créer dashboards.
+
+Étape 13 :
+Créer notifications.
+
+Étape 14 :
+Créer évaluations.
+
+Étape 15 :
+Créer signalements.
+
+Étape 16 :
+Créer sécurité et permissions.
+
+Étape 17 :
+Créer tests.
+
+Étape 18 :
+Créer seed_data.
+
+Étape 19 :
+Finaliser UI/UX.
+
+==================================================
+46. RÈGLE IMPORTANTE POUR COPILOT
+==================================================
+
+Avant de créer ou modifier un fichier :
+
+1. Inspecte la structure existante du projet.
+2. Identifie les fichiers déjà présents.
+3. Ne supprime pas du code fonctionnel sans raison.
+4. Réutilise les composants existants.
+5. Évite les doublons.
+6. Respecte les conventions Django.
+7. Vérifie les imports.
+8. Vérifie les relations entre modèles.
+9. Après chaque fonctionnalité importante, vérifie que le projet peut démarrer.
+
+Après modification :
+
+python manage.py check
+
+Puis si nécessaire :
+
+python manage.py makemigrations
+python manage.py migrate
+
+Et exécute les tests.
+
+==================================================
+47. RÈGLE UI/UX
+==================================================
+
+Ne crée jamais une interface basique ressemblant au Django Admin par défaut pour les utilisateurs.
+
+Créer une vraie application moderne.
+
+Utiliser :
+- cards
+- gradients subtils
+- shadows
+- rounded corners
+- icons
+- badges
+- statistiques
+- animations légères
+- skeleton/loading states
+- toasts
+- modals
+- responsive navigation
+
+Créer des composants réutilisables :
+
+base.html
+navbar.html
+footer.html
+alerts.html
+pagination.html
+trip_card.html
+driver_card.html
+verification_badge.html
+stat_card.html
+modal.html
+
+==================================================
+48. PAGES À CRÉER
+==================================================
+
+PUBLIC :
+
+/
+Accueil
+
+/about/
+À propos
+
+/trips/
+Recherche de trajets
+
+/trips/<id>/
+Détail trajet
+
+/login/
+Connexion
+
+/register/
+Inscription
+
+/terms/
+Conditions
+
+/privacy/
+Confidentialité
+
+CLIENT :
+
+/dashboard/
+/bookings/
+/bookings/<id>/
+/payments/
+/profile/
+/verification/
+/notifications/
+
+CHAUFFEUR :
+
+/driver/dashboard/
+/driver/trips/
+/driver/trips/create/
+/driver/trips/<id>/
+/driver/bookings/
+/driver/vehicle/
+/driver/documents/
+/driver/profile/
+
+ADMIN :
+
+/admin-dashboard/
+/admin-dashboard/users/
+/admin-dashboard/drivers/
+/admin-dashboard/passengers/
+/admin-dashboard/verifications/
+/admin-dashboard/vehicles/
+/admin-dashboard/routes/
+/admin-dashboard/trips/
+/admin-dashboard/bookings/
+/admin-dashboard/payments/
+/admin-dashboard/reports/
+
+==================================================
+49. EXPÉRIENCE UTILISATEUR
+==================================================
+
+CLIENT :
+
+Accueil
+→ rechercher
+→ choisir trajet
+→ voir chauffeur vérifié
+→ vérifier que son propre profil est toujours valide
+→ réserver
+→ choisir paiement
+→ confirmation
+→ historique
+
+IMPORTANT :
+La CNI et les documents sensibles du client sont collectés uniquement dans le processus de vérification du profil, pas pendant chaque réservation.
+
+CHAUFFEUR :
+
+Inscription
+→ soumission des documents
+→ vérification
+→ validation admin
+→ dashboard
+→ choisir itinéraire
+→ prix automatique
+→ publier trajet
+→ recevoir réservations
+→ terminer trajet
+
+ADMIN :
+
+Dashboard
+→ vérifier utilisateurs
+→ valider documents
+→ créer itinéraires
+→ définir tarifs
+→ surveiller trajets
+→ gérer réservations
+→ gérer paiements
+→ traiter signalements
+
+==================================================
+50. MAROUA / CAMEROUN
+==================================================
+
+L'application est destinée à Maroua, Cameroun.
+
+Utiliser :
+- FCFA comme monnaie
+- français comme langue principale
+- numéros de téléphone adaptés au Cameroun
+- noms de quartiers/points de Maroua uniquement comme données fictives de démonstration
+
+Prévoir l'architecture pour ajouter l'anglais plus tard.
+
+==================================================
+51. LIVRABLE FINAL
+==================================================
+
+Je veux obtenir une application Django réellement fonctionnelle.
+
+Elle doit avoir :
+
+✓ authentification
+✓ rôles
+✓ vérification client
+✓ vérification CNI
+✓ vérification permis
+✓ vérification véhicule
+✓ validation administrateur
+✓ itinéraires
+✓ prix administrateur
+✓ offres chauffeur
+✓ recherche client
+✓ réservation
+✓ Cash
+✓ MTN Mobile Money
+✓ Orange Money
+✓ historique paiements
+✓ évaluations
+✓ signalements
+✓ notifications
+✓ expiration documents
+✓ suspension utilisateurs
+✓ dashboards
+✓ interface moderne
+✓ responsive
+✓ tests
+✓ données de démonstration
+✓ documentation
+
+RÈGLE FONDAMENTALE DE CONFIDENTIALITÉ :
+
+Le client soumet ses documents d'identité une seule fois lors de la vérification de son profil. Une fois validé, son profil conserve son statut de vérification.
+
+Lors d'une réservation, l'application ne demande pas à nouveau sa CNI ni ses documents sensibles.
+
+Le système vérifie simplement côté serveur :
+- que le client est connecté ;
+- que son compte est actif ;
+- que son profil est vérifié ;
+- que les documents requis sont encore valides ;
+- qu'il n'est pas suspendu ;
+- qu'il est autorisé à réserver.
+
+Commence maintenant par inspecter le projet existant et son environnement.
+
+Ne passe pas immédiatement à l'étape suivante si l'étape actuelle contient des erreurs.
+
+À chaque étape :
+- explique brièvement ce que tu fais ;
+- crée/modifie les fichiers nécessaires ;
+- donne les commandes à exécuter ;
+- vérifie la cohérence ;
+- corrige les erreurs avant de continuer.
+
+Commence par l'ÉTAPE 1 :
+architecture du projet Django, configuration SQLite, Tailwind/Bootstrap, structure des applications et Custom User Model.

@@ -1,0 +1,99 @@
+{% load static %}
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Réserver un trajet — Maroua Covoit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+  </head>
+  <body class="bg-gray-50">
+    <header class="bg-white shadow-sm">
+      <div class="max-w-4xl mx-auto px-4 py-3">
+        <a href="/" class="text-green-700 hover:text-green-800 font-semibold">&larr; Retour</a>
+      </div>
+    </header>
+
+    <main class="max-w-2xl mx-auto p-6">
+      <h1 class="text-3xl font-bold text-green-700 mb-6">Réserver un trajet</h1>
+
+      {% if messages %}
+        <div class="space-y-2 mb-4">
+          {% for message in messages %}
+            {% if message.tags == 'success' %}
+              <div class="px-4 py-2 rounded bg-green-100 text-green-800">{{ message }}</div>
+            {% else %}
+              <div class="px-4 py-2 rounded bg-red-100 text-red-800">{{ message }}</div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <!-- Résumé du trajet -->
+      <div class="bg-white p-6 rounded shadow mb-6">
+        <h2 class="text-xl font-semibold mb-4">Résumé du trajet</h2>
+        <div class="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p class="text-gray-600">Itinéraire</p>
+            <p class="font-semibold">{{ trip_offer.route.point_depart }} → {{ trip_offer.route.destination }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Départ</p>
+            <p class="font-semibold">{{ trip_offer.date_depart }} à {{ trip_offer.heure_depart }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Chauffeur</p>
+            <p class="font-semibold">{{ trip_offer.driver.full_name }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Véhicule</p>
+            <p class="font-semibold">{{ trip_offer.vehicle.make }} {{ trip_offer.vehicle.model }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Places disponibles</p>
+            <p class="font-semibold">{{ trip_offer.places_disponibles }} / {{ trip_offer.places_totales }}</p>
+          </div>
+          <div>
+            <p class="text-gray-600">Prix unitaire</p>
+            <p class="font-semibold text-green-700">{{ trip_offer.prix_unitaire }} FCFA</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Formulaire de réservation -->
+      <div class="bg-white p-6 rounded shadow">
+        <h2 class="text-xl font-semibold mb-4">Vos détails de réservation</h2>
+        <form method="post" novalidate class="space-y-4">
+          {% csrf_token %}
+
+          <div>
+            {{ form.nombre_places.label_tag }}
+            {{ form.nombre_places }}
+          </div>
+
+          <div>
+            {{ form.payment_method.label_tag }}
+            {{ form.payment_method }}
+          </div>
+
+          <!-- Affichage du montant total (informatif) -->
+          <div class="bg-gray-100 p-4 rounded">
+            <p class="text-sm text-gray-600">Montant total estimé :</p>
+            <p id="montant-total" class="text-2xl font-bold text-green-700">
+              Calculé au moment du paiement
+            </p>
+          </div>
+
+          <div class="flex gap-3">
+            <button class="bg-green-700 text-white px-6 py-2 rounded hover:bg-green-800" type="submit">Continuer</button>
+            <a href="/search/" class="text-gray-700 border border-gray-300 px-6 py-2 rounded hover:bg-gray-50">Annuler</a>
+          </div>
+        </form>
+      </div>
+
+      <div class="mt-6 text-sm text-gray-600">
+        <p><strong>Important :</strong> Mettez à jour votre nombre de places, sélectionnez votre mode de paiement, et cliquez sur "Continuer" pour finaliser votre réservation.</p>
+      </div>
+    </main>
+  </body>
+</html>
